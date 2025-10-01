@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Driver Portal - FoodExpress</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&family=Dancing+Script:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #4ECDC4 0%, #FF6B6B 50%, #FFE66D 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 8s ease-in-out infinite;
+        }
+        
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        
+        .form-input {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(78, 205, 196, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .form-input:focus {
+            border-color: #4ECDC4;
+            box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .form-card {
+            background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .submit-btn {
+            background: linear-gradient(145deg, #4ECDC4, #26A69A);
+            box-shadow: 0 8px 25px rgba(78, 205, 196, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(78, 205, 196, 0.4);
+        }
+        
+        .nav-tab {
+            transition: all 0.3s ease;
+        }
+        
+        .nav-tab.active {
+            background: linear-gradient(145deg, #4ECDC4, #26A69A);
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        .driver-card {
+            background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+            border: 1px solid rgba(78, 205, 196, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .driver-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+        
+        .order-card {
+            background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+            border-left: 4px solid #4ECDC4;
+            transition: all 0.3s ease;
+        }
+        
+        .order-card:hover {
+            transform: translateX(4px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+        
+        .status-badge {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 9999px;
+            font-weight: 600;
+        }
+        
+        .status-pending { background: #FEF3C7; color: #92400E; }
+        .status-assigned { background: #DBEAFE; color: #1E40AF; }
+        .status-delivered { background: #D1FAE5; color: #065F46; }
+        
+        .floating-animation {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .pulse-dot {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .notification-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #EF4444;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: bold;
+            animation: bounce 1s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+    </style>
+<base target="_blank">
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- Header -->
+    <div class="gradient-bg px-4 py-8 relative overflow-hidden">
+        <!-- Floating Icons -->
+        <div class="absolute inset-0 pointer-events-none">
+            <div class="floating-animation absolute top-10 right-10 text-4xl opacity-20">🚗</div>
+            <div class="floating-animation absolute bottom-10 left-10 text-4xl opacity-20" style="animation-delay: 3s;">📦</div>
+        </div>
+        
+        <div class="relative z-10 text-center">
+            <h1 class="text-3xl md:text-4xl font-bold text-white mb-2" style="font-family: 'Playfair Display', serif;">
+                Driver Portal
+            </h1>
+            <p class="text-white/90 text-lg" style="font-family: 'Dancing Script', cursive;">
+                Deliver happiness, earn money
+            </p>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="px-4 py-8 pb-24">
+        <!-- Driver Registration Form -->
+        <div class="max-w-md mx-auto mb-8">
+            <div class="form-card rounded-2xl p-6 shadow-xl">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center" style="font-family: 'Playfair Display', serif;">
+                    Become a Driver
+                </h2>
+                
+                <form id="driverForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                        <input type="text" id="driverName" required
+                               class="form-input w-full px-4 py-3 rounded-lg focus:outline-none"
+                               placeholder="Enter your full name">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                        <input type="tel" id="driverPhone" required
+                               class="form-input w-full px-4 py-3 rounded-lg focus:outline-none"
+                               placeholder="(555) 123-4567">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Vehicle Type</label>
+                        <select id="vehicleType" required
+                                class="form-input w-full px-4 py-3 rounded-lg focus:outline-none">
+                            <option value="">Select vehicle type</option>
+                            <option value="car">Car</option>
+                            <option value="motorcycle">Motorcycle</option>
+                            <option value="bicycle">Bicycle</option>
+                            <option value="scooter">Scooter</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Working Area</label>
+                        <input type="text" id="workingArea" required
+                               class="form-input w-full px-4 py-3 rounded-lg focus:outline-none"
+                               placeholder="Downtown, Midtown, etc.">
+                    </div>
+                    
+                    <div class="flex items-center gap-2">
+                        <input type="checkbox" id="availableNow" class="rounded">
+                        <label for="availableNow" class="text-sm text-gray-600">Available for deliveries now</label>
+                    </div>
+                    
+                    <button type="submit" 
+                            class="submit-btn w-full text-white py-4 rounded-lg font-semibold text-lg">
+                        Register as Driver
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Active Orders Section -->
+        <div class="max-w-4xl mx-auto mb-8">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-gray-800" style="font-family: 'Playfair Display', serif;">
+                    Available Orders
+                </h2>
+                <div class="relative">
+                    <span class="text-2xl">🔔</span>
+                    <div id="notificationBadge" class="notification-badge hidden">0</div>
+                </div>
+            </div>
+            
+            <div id="ordersList" class="space-y-4">
+                <!-- Order cards will be populated by JavaScript -->
+            </div>
+            
+            <div id="noOrders" class="text-center py-12">
+                <div class="text-6xl mb-4">📦</div>
+                <h3 class="text-xl font-semibold text-gray-600 mb-2">No Active Orders</h3>
+                <p class="text-gray-500">New orders will appear here when customers place them</p>
+                <button id="refreshOrders" class="mt-4 bg-gradient-to-r from-teal-500 to-teal-600 text-white px-6 py-2 rounded-lg font-semibold hover:from-teal-600 hover:to-teal-700 transition-all">
+                    Check for New Orders
+                </button>
+            </div>
+        </div>
+        
+        <!-- Registered Drivers -->
+        <div class="max-w-4xl mx-auto">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center" style="font-family: 'Playfair Display', serif;">
+                Registered Drivers
+            </h2>
+            
+            <div id="driversList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Driver cards will be populated by JavaScript -->
+            </div>
+            
+            <div id="noDrivers" class="text-center py-12 hidden">
+                <div class="text-6xl mb-4">🚗</div>
+                <h3 class="text-xl font-semibold text-gray-600 mb-2">No Drivers Yet</h3>
+                <p class="text-gray-500">Be the first to join our delivery team!</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Order Details Modal -->
+    <div id="orderModal" class="fixed inset-0 z-50 hidden bg-black bg-opacity-50 backdrop-blur-sm">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+                <div class="p-6 border-b">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-2xl font-bold text-gray-800" style="font-family: 'Playfair Display', serif;">
+                            Order Details
+                        </h3>
+                        <button id="closeOrderModal" class="text-gray-500 hover:text-gray-700 text-2xl">×</button>
+                    </div>
+                </div>
+                
+                <div class="p-6">
+                    <div id="orderDetailsContent">
+                        <!-- Order details will be populated by JavaScript -->
+                    </div>
+                    
+                    <div class="mt-6 flex gap-3">
+                        <button id="acceptOrderBtn" 
+                                class="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white py-3 rounded-lg font-semibold hover:from-green-600 hover:to-green-700 transition-all">
+                            Accept Order
+                        </button>
+                        <button id="declineOrderBtn" 
+                                class="flex-1 bg-gradient-to-r from-red-500 to-red-600 text-white py-3 rounded-lg font-semibold hover:from-red-600 hover:to-red-700 transition-all">
+                            Decline
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Success Modal -->
+    <div id="successModal" class="fixed inset-0 z-50 hidden bg-black bg-opacity-50 backdrop-blur-sm">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-8 text-center">
+                <div class="text-6xl mb-4">🎉</div>
+                <h3 class="text-2xl font-bold text-gray-800 mb-2" style="font-family: 'Playfair Display', serif;">
+                    Welcome to the Team!
+                </h3>
+                <p class="text-gray-600 mb-6">
+                    You've successfully registered as a driver. You'll receive notifications when new orders are available!
+                </p>
+                <button id="closeSuccessModal" 
+                        class="bg-gradient-to-r from-teal-500 to-teal-600 text-white px-8 py-3 rounded-lg font-semibold hover:from-teal-600 hover:to-teal-700 transition-all duration-300">
+                    Start Delivering
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bottom Navigation -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t z-40">
+        <div class="flex justify-around py-2">
+            <a href="index.html" class="nav-tab flex flex-col items-center py-2 px-4 rounded-lg">
+                <span class="text-2xl mb-1">🏠</span>
+                <span class="text-xs font-medium">Restaurants</span>
+            </a>
+            <a href="customers.html" class="nav-tab flex flex-col items-center py-2 px-4 rounded-lg">
+                <span class="text-2xl mb-1">👤</span>
+                <span class="text-xs font-medium">Customer</span>
+            </a>
+            <a href="drivers.html" class="nav-tab active flex flex-col items-center py-2 px-4 rounded-lg">
+                <span class="text-2xl mb-1">🚗</span>
+                <span class="text-xs font-medium">Driver</span>
+            </a>
+            <a href="admin.html" class="nav-tab flex flex-col items-center py-2 px-4 rounded-lg">
+                <span class="text-2xl mb-1">🔒</span>
+                <span class="text-xs font-medium">Admin</span>
+            </a>
+        </div>
+    </nav>
+    
+    <script>
+        // Driver Management System
+        let drivers = [];
+        let orders = [];
+        let currentOrder = null;
+        
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDrivers();
+            loadOrders();
+            setupEventListeners();
+            animateElements();
+            startOrderPolling();
+        });
+        
+        // Setup event listeners
+        function setupEventListeners() {
+            document.getElementById('driverForm').addEventListener('submit', handleDriverRegistration);
+            document.getElementById('closeSuccessModal').addEventListener('click', closeSuccessModal);
+            document.getElementById('closeOrderModal').addEventListener('click', closeOrderModal);
+            document.getElementById('refreshOrders').addEventListener('click', loadOrders);
+            document.getElementById('acceptOrderBtn').addEventListener('click', acceptOrder);
+            document.getElementById('declineOrderBtn').addEventListener('click', declineOrder);
+            
+            // Phone number formatting
+            document.getElementById('driverPhone').addEventListener('input', formatPhoneNumber);
+        }
+        
+        // Load drivers from localStorage
+        function loadDrivers() {
+            const stored = localStorage.getItem('foodExpress_drivers');
+            drivers = stored ? JSON.parse(stored) : [];
+            displayDrivers();
+        }
+        
+        // Load orders from localStorage
+        function loadOrders() {
+            const stored = localStorage.getItem('foodExpress_orders');
+            orders = stored ? JSON.parse(stored) : [];
+            
+            // Filter only pending orders
+            const pendingOrders = orders.filter(order => order.status === 'pending');
+            displayOrders(pendingOrders);
+            updateNotificationBadge(pendingOrders.length);
+        }
+        
+        // Handle driver registration
+        function handleDriverRegistration(e) {
+            e.preventDefault();
+            
+            const formData = {
+                id: 'drv_' + Date.now(),
+                name: document.getElementById('driverName').value.trim(),
+                phone: document.getElementById('driverPhone').value.trim(),
+                vehicleType: document.getElementById('vehicleType').value,
+                workingArea: document.getElementById('workingArea').value.trim(),
+                available: document.getElementById('availableNow').checked,
+                registrationDate: new Date().toISOString(),
+                totalDeliveries: 0,
+                totalEarnings: 0,
+                rating: 5.0,
+                status: document.getElementById('availableNow').checked ? 'available' : 'offline'
+            };
+            
+            // Validate form
+            if (!formData.name || !formData.phone || !formData.vehicleType || !formData.workingArea) {
+                showError('Please fill in all required fields');
+                return;
+            }
+            
+            // Check for duplicate phone
+            if (drivers.some(driver => driver.phone === formData.phone)) {
+                showError('A driver with this phone number already exists');
+                return;
+            }
+            
+            // Add driver
+            drivers.push(formData);
+            localStorage.setItem('foodExpress_drivers', JSON.stringify(drivers));
+            
+            // Reset form
+            document.getElementById('driverForm').reset();
+            
+            // Show success modal
+            showSuccessModal();
+            
+            // Refresh driver list
+            displayDrivers();
+            
+            // Animate form
+            anime({
+                targets: '.form-card',
+                scale: [1, 1.02, 1],
+                duration: 600,
+                easing: 'easeOutQuart'
+            });
+        }
+        
+        // Display drivers
+        function displayDrivers() {
+            const container = document.getElementById('driversList');
+            const noDrivers = document.getElementById('noDrivers');
+            
+            if (drivers.length === 0) {
+                container.innerHTML = '';
+                noDrivers.classList.remove('hidden');
+                return;
+            }
+            
+            noDrivers.classList.add('hidden');
+            container.innerHTML = '';
+            
+            drivers.forEach((driver, index) => {
+                const card = createDriverCard(driver, index);
+                container.appendChild(card);
+            });
+            
+            // Animate cards
+            anime({
+                targets: '.driver-card',
+                translateY: [30, 0],
+                opacity: [0, 1],
+                delay: anime.stagger(100),
+                duration: 600,
+                easing: 'easeOutQuart'
+            });
+        }
+        
+        // Display orders
+        function displayOrders(pendingOrders) {
+            const container = document.getElementById('ordersList');
+            const noOrders = document.getElementById('noOrders');
+            
+            if (pendingOrders.length === 0) {
+                container.innerHTML = '';
+                noOrders.classList.remove('hidden');
+                return;
+            }
+            
+            noOrders.classList.add('hidden');
+            container.innerHTML = '';
+            
+            pendingOrders.forEach(order => {
+                const card = createOrderCard(order);
+                container.appendChild(card);
+            });
+            
+            // Animate cards
+            anime({
+                targets: '.order-card',
+                translateX: [-50, 0],
+                opacity: [0, 1],
+                delay: anime.stagger(150),
+                duration: 600,
+                easing: 'easeOutQuart'
+            });
+        }
+        
+        // Create driver card
+        function createDriverCard(driver) {
+            const card = document.createElement('div');
+            card.className = 'driver-card rounded-2xl p-6 shadow-lg';
+            
+            const regDate = new Date(driver.registrationDate).toLocaleDateString();
+            const initials = driver.name.split(' ').map(n => n[0]).join('').toUpperCase();
+            const statusColor = driver.available ? 'text-green-600' : 'text-gray-600';
+            const statusText = driver.available ? 'Available' : 'Offline';
+            
+            card.innerHTML = `
+                <div class="flex items-center mb-4">
+                    <div class="w-12 h-12 bg-gradient-to-br from-teal-500 to-teal-600 rounded-full flex items-center justify-center text-white font-bold text-lg mr-4">
+                        ${initials}
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-gray-800 text-lg">${driver.name}</h3>
+                        <p class="text-sm text-gray-600">Driver since ${regDate}</p>
+                        <div class="flex items-center mt-1">
+                            <div class="w-2 h-2 rounded-full ${driver.available ? 'bg-green-500 pulse-dot' : 'bg-gray-400'} mr-2"></div>
+                            <span class="text-xs ${statusColor} font-semibold">${statusText}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="space-y-2 text-sm">
+                    <div class="flex items-center text-gray-600">
+                        <span class="mr-2">📞</span>
+                        <span>${driver.phone}</span>
+                    </div>
+                    <div class="flex items-center text-gray-600">
+                        <span class="mr-2">🚗</span>
+                        <span class="capitalize">${driver.vehicleType}</span>
+                    </div>
+                    <div class="flex items-center text-gray-600">
+                        <span class="mr-2">📍</span>
+                        <span>${driver.workingArea}</span>
+                    </div>
+                </div>
+                
+                <div class="mt-4 pt-4 border-t border-gray-200">
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-600">Deliveries:</span>
+                        <span class="font-semibold">${driver.totalDeliveries || 0}</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-600">Earnings:</span>
+                        <span class="font-semibold text-green-600">$${(driver.totalEarnings || 0).toFixed(2)}</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-600">Rating:</span>
+                        <span class="font-semibold text-yellow-600">${(driver.rating || 5.0).toFixed(1)}★</span>
+                    </div>
+                </div>
+                
+                <div class="mt-4 flex gap-2">
+                    <button onclick="toggleAvailability('${driver.id}')" 
+                            class="flex-1 ${driver.available ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'} py-2 px-4 rounded-lg text-sm font-medium hover:opacity-80 transition-opacity">
+                        ${driver.available ? 'Go Offline' : 'Go Online'}
+                    </button>
+                    <button onclick="deleteDriver('${driver.id}')" 
+                            class="flex-1 bg-red-100 text-red-700 py-2 px-4 rounded-lg text-sm font-medium hover:bg-red-200 transition-colors">
+                        Delete
+                    </button>
+                </div>
+            `;
+            
+            return card;
+        }
+        
+        // Create order card
+        function createOrderCard(order) {
+            const card = document.createElement('div');
+            card.className = 'order-card rounded-2xl p-6 shadow-lg cursor-pointer';
+            card.onclick = () => openOrderModal(order);
+            
+            const orderTime = new Date(order.timestamp).toLocaleTimeString();
+            const itemCount = order.items.reduce((sum, item) => sum + item.quantity, 0);
+            
+            card.innerHTML = `
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <h3 class="font-bold text-gray-800 text-lg">${order.restaurantName}</h3>
+                        <p class="text-sm text-gray-600">Order #${order.id.slice(-6)}</p>
+                    </div>
+                    <div class="text-right">
+                        <div class="status-badge status-pending mb-1">${order.status}</div>
+                        <p class="text-xs text-gray-500">${orderTime}</p>
+                    </div>
+                </div>
+                
+                <div class="space-y-2 text-sm mb-4">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Items:</span>
+                        <span class="font-semibold">${itemCount}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Total:</span>
+                        <span class="font-semibold text-green-600">$${order.total.toFixed(2)}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Delivery Fee:</span>
+                        <span class="font-semibold">$${order.deliveryFee.toFixed(2)}</span>
+                    </div>
+                </div>
+                
+                <div class="flex gap-2">
+                    <button onclick="event.stopPropagation(); openOrderModal(${JSON.stringify(order).replace(/"/g, '&quot;')})" 
+                            class="flex-1 bg-gradient-to-r from-teal-500 to-teal-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:from-teal-600 hover:to-teal-700 transition-all">
+                        View Details
+                    </button>
+                    <button onclick="event.stopPropagation(); acceptOrder('${order.id}')" 
+                            class="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:from-green-600 hover:to-green-700 transition-all">
+                        Accept
+                    </button>
+                </div>
+            `;
+            
+            return card;
+        }
+        
+        // Open order modal
+        function openOrderModal(order) {
+            currentOrder = order;
+            
+            const content = document.getElementById('orderDetailsContent');
+            const orderTime = new Date(order.timestamp).toLocaleString();
+            const itemCount = order.items.reduce((sum, item) => sum + item.quantity, 0);
+            
+            content.innerHTML = `
+                <div class="mb-6">
+                    <h4 class="font-bold text-lg text-gray-800 mb-2">${order.restaurantName}</h4>
+                    <p class="text-sm text-gray-600">Order #${order.id.slice(-6)} • ${orderTime}</p>
+                    <div class="mt-2">
+                        <span class="status-badge status-pending">${order.status}</span>
+                    </div>
+                </div>
+                
+                <div class="mb-6">
+                    <h5 class="font-semibold text-gray-800 mb-3">Order Items</h5>
+                    <div class="space-y-2">
+                        ${order.items.map(item => `
+                            <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                                <div>
+                                    <span class="font-medium">${item.name}</span>
+                                    <span class="text-sm text-gray-600 ml-2">×${item.quantity}</span>
+                                </div>
+                                <span class="font-semibold">$${(item.price * item.quantity).toFixed(2)}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                
+                ${order.notes ? `
+                <div class="mb-6">
+                    <h5 class="font-semibold text-gray-800 mb-2">Special Instructions</h5>
+                    <p class="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">${order.notes}</p>
+                </div>
+                ` : ''}
+                
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <div class="flex justify-between mb-2">
+                        <span>Subtotal:</span>
+                        <span>$${order.subtotal.toFixed(2)}</span>
+                    </div>
+                    <div class="flex justify-between mb-2">
+                        <span>Delivery Fee:</span>
+                        <span>$${order.deliveryFee.toFixed(2)}</span>
+                    </div>
+                    <div class="flex justify-between font-bold text-lg border-t pt-2">
+                        <span>Total:</span>
+                        <span class="text-green-600">$${order.total.toFixed(2)}</span>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('orderModal').classList.remove('hidden');
+            
+            // Animate modal
+            anime({
+                targets: '#orderModal .bg-white',
+                scale: [0.8, 1],
+                opacity: [0, 1],
+                duration: 300,
+                easing: 'easeOutQuart'
+            });
+        }
+        
+        // Close order modal
+        function closeOrderModal() {
+            anime({
+                targets: '#orderModal .bg-white',
+                scale: [1, 0.8],
+                opacity: [1, 0],
+                duration: 200,
+                easing: 'easeInQuart',
+                complete: () => {
+                    document.getElementById('orderModal').classList.add('hidden');
+                }
+            });
+        }
+        
+        // Accept order
+        function acceptOrder(orderId = null) {
+            const orderIdToAccept = orderId || currentOrder?.id;
+            if (!orderIdToAccept) return;
+            
+            // Update order status
+            const orderIndex = orders.findIndex(o => o.id === orderIdToAccept);
+            if (orderIndex !== -1) {
+                orders[orderIndex].status = 'assigned';
+                orders[orderIndex].driverId = 'current_driver'; // In real app, this would be the logged-in driver
+                localStorage.setItem('foodExpress_orders', JSON.stringify(orders));
+                
+                // Show success notification
+                showNotification('Order accepted! Proceed to restaurant for pickup.', 'success');
+                
+                // Refresh orders list
+                loadOrders();
+                
+                // Close modal
+                closeOrderModal();
+            }
+        }
+        
+        // Decline order
+        function declineOrder() {
+            if (!currentOrder) return;
+            
+            showNotification('Order declined. Other drivers will be notified.', 'info');
+            closeOrderModal();
+        }
+        
+        // Toggle driver availability
+        function toggleAvailability(driverId) {
+            const driverIndex = drivers.findIndex(d => d.id === driverId);
+            if (driverIndex !== -1) {
+                drivers[driverIndex].available = !drivers[driverIndex].available;
+                drivers[driverIndex].status = drivers[driverIndex].available ? 'available' : 'offline';
+                localStorage.setItem('foodExpress_drivers', JSON.stringify(drivers));
+                displayDrivers();
+                
+                const status = drivers[driverIndex].available ? 'online' : 'offline';
+                showNotification(`You are now ${status}`, 'info');
+            }
+        }
+        
+        // Delete driver
+        function deleteDriver(driverId) {
+            if (confirm('Are you sure you want to delete this driver?')) {
+                drivers = drivers.filter(d => d.id !== driverId);
+                localStorage.setItem('foodExpress_drivers', JSON.stringify(drivers));
+                displayDrivers();
+                showNotification('Driver deleted successfully', 'success');
+            }
+        }
+        
+        // Format phone number
+        function formatPhoneNumber(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length >= 6) {
+                value = `(${value.slice(0,3)}) ${value.slice(3,6)}-${value.slice(6,10)}`;
+            } else if (value.length >= 3) {
+                value = `(${value.slice(0,3)}) ${value.slice(3)}`;
+            }
+            e.target.value = value;
+        }
+        
+        // Show success modal
+        function showSuccessModal() {
+            document.getElementById('successModal').classList.remove('hidden');
+            anime({
+                targets: '#successModal .bg-white',
+                scale: [0.8, 1],
+                opacity: [0, 1],
+                duration: 400,
+                easing: 'easeOutQuart'
+            });
+        }
+        
+        // Close success modal
+        function closeSuccessModal() {
+            anime({
+                targets: '#successModal .bg-white',
+                scale: [1, 0.8],
+                opacity: [1, 0],
+                duration: 200,
+                easing: 'easeInQuart',
+                complete: () => {
+                    document.getElementById('successModal').classList.add('hidden');
+                }
+            });
+        }
+        
+        // Show notification
+        function showNotification(message, type = 'info') {
+            const colors = {
+                success: 'bg-green-500',
+                error: 'bg-red-500',
+                info: 'bg-blue-500',
+                warning: 'bg-yellow-500'
+            };
+            
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 ${colors[type]} text-white px-6 py-3 rounded-lg shadow-lg z-50`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            anime({
+                targets: notification,
+                translateX: [300, 0],
+                opacity: [0, 1],
+                duration: 300,
+                easing: 'easeOutQuart'
+            });
+            
+            setTimeout(() => {
+                anime({
+                    targets: notification,
+                    translateX: [0, 300],
+                    opacity: [1, 0],
+                    duration: 300,
+                    easing: 'easeInQuart',
+                    complete: () => {
+                        document.body.removeChild(notification);
+                    }
+                });
+            }, 3000);
+        }
+        
+        // Update notification badge
+        function updateNotificationBadge(count) {
+            const badge = document.getElementById('notificationBadge');
+            if (count > 0) {
+                badge.textContent = count;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+        
+        // Start order polling (simulate real-time updates)
+        function startOrderPolling() {
+            setInterval(() => {
+                loadOrders();
+            }, 30000); // Check every 30 seconds
+        }
+        
+        // Show error
+        function showError(message) {
+            showNotification(message, 'error');
+        }
+        
+        // Animate elements
+        function animateElements() {
+            // Animate floating icons
+            anime({
+                targets: '.floating-animation',
+                translateY: [-10, 10],
+                duration: 4000,
+                direction: 'alternate',
+                loop: true,
+                easing: 'easeInOutSine'
+            });
+            
+            // Animate form inputs on focus
+            document.querySelectorAll('.form-input').forEach(input => {
+                input.addEventListener('focus', () => {
+                    anime({
+                        targets: input,
+                        scale: [1, 1.02],
+                        duration: 200,
+                        easing: 'easeOutQuart'
+                    });
+                });
+                
+                input.addEventListener('blur', () => {
+                    anime({
+                        targets: input,
+                        scale: [1.02, 1],
+                        duration: 200,
+                        easing: 'easeOutQuart'
+                    });
+                });
+            });
+        }
+        
+        // Export functions for global access
+        window.toggleAvailability = toggleAvailability;
+        window.deleteDriver = deleteDriver;
+        window.acceptOrder = acceptOrder;
+    </script>
+</body>
+</html>
