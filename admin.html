@@ -1074,6 +1074,207 @@
         window.viewOrder = viewOrder;
         window.approveOrder = approveOrder;
         window.openEditModal = openEditModal;
-    </script>
+   // Generate restaurant applications content
+function generateRestaurantApplicationsContent() {
+    const applications = JSON.parse(localStorage.getItem('foodExpress_restaurantApplications') || '[]');
+    const pendingApplications = applications.filter(app => app.status === 'pending');
+    
+    let html = `
+        <div class="admin-card rounded-2xl p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-gray-800" style="font-family: 'Playfair Display', serif;">
+                    Restaurant Applications (${pendingApplications.length})
+                </h3>
+            </div>
+    `;
+    
+    if (pendingApplications.length === 0) {
+        html += `
+            <div class="text-center py-12">
+                <div class="text-6xl mb-4">📝</div>
+                <h3 class="text-xl font-semibold text-gray-600 mb-2">No Pending Applications</h3>
+                <p class="text-gray-500">All restaurant applications have been processed</p>
+            </div>
+        `;
+    } else {
+        html += `
+            <div class="space-y-4">
+        `;
+        
+        pendingApplications.forEach(application => {
+            html += `
+                <div class="border border-gray-200 rounded-2xl p-6 hover:shadow-lg transition-all">
+                    <div class="flex flex-col md:flex-row gap-6">
+                        <div class="flex-1">
+                            <div class="flex items-start justify-between mb-4">
+                                <div>
+                                    <h4 class="text-lg font-bold text-gray-800">${application.name}</h4>
+                                    <p class="text-sm text-gray-600 capitalize">${application.cuisine} • Applied: ${new Date(application.applicationDate).toLocaleDateString()}</p>
+                                </div>
+                                <span class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-semibold">
+                                    Pending Review
+                                </span>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                <div>
+                                    <p class="font-semibold text-gray-700">Contact Info</p>
+                                    <p>📞 ${application.phone}</p>
+                                    <p>✉️ ${application.email}</p>
+                                    <p>👤 ${application.ownerName}</p>
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-gray-700">Location</p>
+                                    <p>📍 ${application.address}</p>
+                                    <p class="truncate">🗺️ <a href="${application.mapsLink}" target="_blank" class="text-blue-600 hover:underline">View on Maps</a></p>
+                                    <p>⏱️ ${application.deliveryTime}</p>
+                                </div>
+                            </div>
+                            
+                            ${application.description ? `
+                            <div class="mt-4">
+                                <p class="font-semibold text-gray-700 mb-2">Description</p>
+                                <p class="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">${application.description}</p>
+                            </div>
+                            ` : ''}
+                        </div>
+                        
+                        ${application.restaurantImage ? `
+                        <div class="md:w-48">
+                            <p class="font-semibold text-gray-700 mb-2">Restaurant Image</p>
+                            <img src="${application.restaurantImage}" alt="${application.name}" 
+                                 class="w-full h-32 object-cover rounded-lg shadow-md">
+                        </div>
+                        ` : ''}
+                    </div>
+                    
+                    ${application.menuImage ? `
+                    <div class="mt-4">
+                        <p class="font-semibold text-gray-700 mb-2">Menu Image</p>
+                        <img src="${application.menuImage}" alt="${application.name} Menu" 
+                             class="max-w-md rounded-lg shadow-md">
+                    </div>
+                    ` : ''}
+                    
+                    <div class="flex gap-3 mt-6 pt-4 border-t">
+                        <button onclick="approveRestaurantApplication('${application.id}')" 
+                                class="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white py-3 rounded-lg font-semibold hover:from-green-600 hover:to-green-700 transition-all">
+                            Approve
+                        </button>
+                        <button onclick="rejectRestaurantApplication('${application.id}')" 
+                                class="flex-1 bg-gradient-to-r from-red-500 to-red-600 text-white py-3 rounded-lg font-semibold hover:from-red-600 hover:to-red-700 transition-all">
+                            Reject
+                        </button>
+                        <button onclick="viewApplicationDetails('${application.id}')" 
+                                class="flex-1 bg-gray-200 text-gray-800 py-3 rounded-lg font-semibold hover:bg-gray-300 transition-colors">
+                            View Details
+                        </button>
+                    </div>
+                </div>
+            `;
+        });
+        
+        html += `</div>`;
+    }
+    
+    html += `</div>`;
+    return html;
+}
+
+// Approve restaurant application
+function approveRestaurantApplication(applicationId) {
+    const applications = JSON.parse(localStorage.getItem('foodExpress_restaurantApplications') || '[]');
+    const application = applications.find(app => app.id === applicationId);
+    
+    if (application) {
+        // Update application status
+        application.status = 'approved';
+        application.approved = true;
+        application.approvalDate = new Date().toISOString();
+        
+        // Add to active restaurants
+        const restaurants = JSON.parse(localStorage.getItem('foodExpress_restaurants') || '[]');
+        const newRestaurant = {
+            id: 'rest_' + Date.now(),
+            name: application.name,
+            cuisine: application.cuisine,
+            rating: 4.5, // Default rating
+            deliveryTime: application.deliveryTime,
+            phone: application.phone,
+            address: application.address,
+            image: application.restaurantImage || 'https://kimi-web-img.moonshot.cn/img/media.istockphoto.com/7eefccec47a86a7830f668ff4eeb1d7c9c13edf7.jpg',
+            featured: false,
+            coordinates: {lat: 40.7128, lng: -74.0060}, // Default coordinates
+            menu: generateSampleMenu(application.cuisine),
+            email: application.email,
+            ownerName: application.ownerName,
+            mapsLink: application.mapsLink,
+            description: application.description
+        };
+        
+        restaurants.push(newRestaurant);
+        
+        // Save updates
+        localStorage.setItem('foodExpress_restaurantApplications', JSON.stringify(applications));
+        localStorage.setItem('foodExpress_restaurants', JSON.stringify(restaurants));
+        
+        showNotification('Restaurant approved and added to platform!', 'success');
+        loadTabContent(); // Refresh the view
+    }
+}
+
+// Reject restaurant application
+function rejectRestaurantApplication(applicationId) {
+    const applications = JSON.parse(localStorage.getItem('foodExpress_restaurantApplications') || '[]');
+    const application = applications.find(app => app.id === applicationId);
+    
+    if (application) {
+        application.status = 'rejected';
+        application.rejectionDate = new Date().toISOString();
+        
+        localStorage.setItem('foodExpress_restaurantApplications', JSON.stringify(applications));
+        showNotification('Restaurant application rejected', 'info');
+        loadTabContent(); // Refresh the view
+    }
+}
+
+// View application details
+function viewApplicationDetails(applicationId) {
+    const applications = JSON.parse(localStorage.getItem('foodExpress_restaurantApplications') || '[]');
+    const application = applications.find(app => app.id === applicationId);
+    
+    if (application) {
+        alert(`Application Details:\n\nRestaurant: ${application.name}\nCuisine: ${application.cuisine}\nOwner: ${application.ownerName}\nPhone: ${application.phone}\nEmail: ${application.email}\nAddress: ${application.address}\nDelivery Time: ${application.deliveryTime}\n\nApplied: ${new Date(application.applicationDate).toLocaleString()}`);
+    }
+}
+
+// Generate sample menu based on cuisine
+function generateSampleMenu(cuisine) {
+    const menuTemplates = {
+        italian: [
+            {id: 'item_' + Date.now() + '_1', name: 'Margherita Pizza', price: 18.99, description: 'Fresh mozzarella, basil, tomato sauce'},
+            {id: 'item_' + Date.now() + '_2', name: 'Spaghetti Carbonara', price: 16.99, description: 'Creamy sauce with pancetta and parmesan'},
+            {id: 'item_' + Date.now() + '_3', name: 'Caesar Salad', price: 12.99, description: 'Crisp romaine, parmesan, croutons'}
+        ],
+        asian: [
+            {id: 'item_' + Date.now() + '_1', name: 'Kung Pao Chicken', price: 15.99, description: 'Spicy stir-fry with peanuts and vegetables'},
+            {id: 'item_' + Date.now() + '_2', name: 'Pad Thai', price: 14.99, description: 'Traditional Thai noodles with shrimp'},
+            {id: 'item_' + Date.now() + '_3', name: 'Spring Rolls', price: 7.99, description: 'Crispy vegetable rolls with sweet chili sauce'}
+        ],
+        mexican: [
+            {id: 'item_' + Date.now() + '_1', name: 'Chicken Enchiladas', price: 13.99, description: 'Rolled tortillas with spicy chicken'},
+            {id: 'item_' + Date.now() + '_2', name: 'Beef Tacos', price: 11.99, description: 'Three soft tacos with seasoned beef'},
+            {id: 'item_' + Date.now() + '_3', name: 'Guacamole & Chips', price: 9.99, description: 'Fresh avocado dip with tortilla chips'}
+        ],
+        american: [
+            {id: 'item_' + Date.now() + '_1', name: 'Classic Cheeseburger', price: 12.99, description: 'Beef patty with cheese, lettuce, tomato'},
+            {id: 'item_' + Date.now() + '_2', name: 'BBQ Bacon Burger', price: 14.99, description: 'Bacon, BBQ sauce, onion rings'},
+            {id: 'item_' + Date.now() + '_3', name: 'Sweet Potato Fries', price: 6.99, description: 'Crispy sweet potato fries'}
+        ]
+    };
+    
+    return menuTemplates[cuisine] || menuTemplates.american;
+}
+     </script>
 </body>
 </html>
