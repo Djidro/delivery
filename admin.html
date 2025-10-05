@@ -504,34 +504,37 @@
             loadTabContent();
         }
         
-        // Load tab content
-        function loadTabContent() {
-            const container = document.getElementById('tabContent');
-            
-            switch (currentTab) {
-                case 'restaurants':
-                    container.innerHTML = generateRestaurantsContent();
-                    break;
-                case 'customers':
-                    container.innerHTML = generateCustomersContent();
-                    break;
-                case 'drivers':
-                    container.innerHTML = generateDriversContent();
-                    break;
-                case 'orders':
-                    container.innerHTML = generateOrdersContent();
-                    break;
-            }
-            
-            // Animate content
-            anime({
-                targets: '#tabContent',
-                opacity: [0, 1],
-                translateY: [20, 0],
-                duration: 400,
-                easing: 'easeOutQuart'
-            });
-        }
+     // Load tab content
+function loadTabContent() {
+    const container = document.getElementById('tabContent');
+    
+    switch (currentTab) {
+        case 'restaurants':
+            container.innerHTML = generateRestaurantsContent();
+            break;
+        case 'customers':
+            container.innerHTML = generateCustomersContent();
+            break;
+        case 'drivers':
+            container.innerHTML = generateDriversContent();
+            break;
+        case 'orders':
+            container.innerHTML = generateOrdersContent();
+            break;
+        case 'applications':
+            container.innerHTML = generateRestaurantApplicationsContent();
+            break;
+    }
+    
+    // Animate content
+    anime({
+        targets: '#tabContent',
+        opacity: [0, 1],
+        translateY: [20, 0],
+        duration: 400,
+        easing: 'easeOutQuart'
+    });
+}
         
         // Generate restaurants content
         function generateRestaurantsContent() {
