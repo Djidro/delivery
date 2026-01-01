@@ -50,99 +50,41 @@
     </div>
 
     <script type="module">
-        import { db } from './firebase-config.js';
-        import { collection, addDoc, onSnapshot, doc, updateDoc, query, where, serverTimestamp } 
-        from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    // Import the database connection
+    import { db } from './firebase-config.js';
+    import { collection, addDoc, onSnapshot, doc, updateDoc, query, where, serverTimestamp } 
+    from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        let map, marker;
-        const currentOrderId = "LIVE_ORDER_SESSION"; // Simplified for MVP
+    // IMPORTANT: This makes the function "global" so the buttons can see it
+    window.showScreen = (role) => {
+        console.log("Switching to role:", role); // Check your browser console (F12)
+        
+        // 1. Hide all screens
+        const screens = document.querySelectorAll('.screen');
+        screens.forEach(s => s.classList.remove('active'));
+        screens.forEach(s => s.classList.add('hidden'));
 
-        window.showScreen = (role) => {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(`screen-${role}`).classList.add('active');
-            if(role === 'restaurant') initRestaurant();
-            if(role === 'driver') initDriver();
-        };
-
-        // --- CUSTOMER LOGIC ---
-        window.placeOrder = async (name, price) => {
-            const docRef = await addDoc(collection(db, "orders"), {
-                itemName: name,
-                status: "pending",
-                lat: 23.5880, lng: 58.3829, // Default start coord
-                createdAt: serverTimestamp()
-            });
-            document.getElementById('customer-status').classList.remove('hidden');
-            listenToOrder(docRef.id);
-        };
-
-        function listenToOrder(id) {
-            onSnapshot(doc(db, "orders", id), (snapshot) => {
-                const data = snapshot.data();
-                document.getElementById('track-status').innerText = data.status.toUpperCase();
-                updateMap(data.lat, data.lng);
-            });
+        // 2. Show the selected screen
+        const target = document.getElementById(`screen-${role}`);
+        if (target) {
+            target.classList.add('active');
+            target.classList.remove('hidden');
+        } else {
+            console.error("Screen not found: screen-" + role);
         }
 
-        function updateMap(lat, lng) {
-            const pos = { lat, lng };
-            if (!map) {
-                map = new google.maps.Map(document.getElementById("map"), { zoom: 15, center: pos });
-                marker = new google.maps.Marker({ position: pos, map: map, title: "Driver" });
-            } else {
-                marker.setPosition(pos);
-                map.panTo(pos);
-            }
-        }
+        // 3. Initialize specific logic
+        if(role === 'restaurant') initRestaurant();
+        if(role === 'driver') initDriver();
+    };
 
-        // --- RESTAURANT LOGIC ---
-        function initRestaurant() {
-            onSnapshot(query(collection(db, "orders"), where("status", "==", "pending")), (snap) => {
-                const container = document.getElementById('order-list-restaurant');
-                container.innerHTML = "";
-                snap.forEach(d => {
-                    container.innerHTML += `
-                        <div class="card">
-                            <p><b>Order:</b> ${d.data().itemName}</p>
-                            <button onclick="updateStatus('${d.id}', 'preparing')" class="bg-green-500 text-white p-2 rounded">Accept Order</button>
-                            <button onclick="updateStatus('${d.id}', 'ready')" class="bg-blue-500 text-white p-2 rounded ml-2">Ready for Pickup</button>
-                        </div>`;
-                });
-            });
-        }
+    // --- PASTE YOUR REMAINING LOGIC (placeOrder, initRestaurant, etc.) BELOW THIS LINE ---
+    
+    // Example placeOrder to ensure it's global
+    window.placeOrder = async (name, price) => {
+        // ... (use the code from previous message)
+    };
+</script>
 
-        // --- DRIVER LOGIC ---
-        function initDriver() {
-            onSnapshot(query(collection(db, "orders"), where("status", "==", "ready")), (snap) => {
-                const container = document.getElementById('order-list-driver');
-                container.innerHTML = "";
-                snap.forEach(d => {
-                    container.innerHTML += `
-                        <div class="card">
-                            <p>Pickup: ${d.data().itemName}</p>
-                            <button onclick="simulateDelivery('${d.id}')" class="bg-blue-600 text-white p-2 rounded">Start Delivery Simulation</button>
-                        </div>`;
-                });
-            });
-        }
-
-        window.updateStatus = async (id, status) => {
-            await updateDoc(doc(db, "orders", id), { status });
-        };
-
-        window.simulateDelivery = (id) => {
-            let lat = 23.5880;
-            let lng = 58.3829;
-            setInterval(async () => {
-                lat += 0.0002;
-                lng += 0.0002;
-                await updateDoc(doc(db, "orders", id), { lat, lng, status: "On the way" });
-            }, 3000);
-        };
-
-        // Export to window for HTML buttons
-        window.updateStatus = updateStatus;
-        window.simulateDelivery = simulateDelivery;
-    </script>
 </body>
 </html>
